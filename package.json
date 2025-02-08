@@ -1,0 +1,19 @@
+{
+  "name": "tinder",
+  "version": "1.0.0",
+  "description": "Tinder Application",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "node.js",
+    "javascript.js"
+  ],
+  "author": "Anil Yadav",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
