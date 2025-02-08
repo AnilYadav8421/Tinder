@@ -9,12 +9,24 @@ app.listen(3000) // in 3 step we have created express sever.
 
 // lets use user handler mathod is use as it's name indicate that is to handle user.
 // req, res stand for request, response
-app.use("/hello", (req, res) => {
-    res.send("hello from server") //sending response from server
-})
-app.use("/greet", (req, res)=>{
-    res.send("Greet from server")
-})
+
+// This will match all the HTTP method API calls to /test
 app.use("/test",(req, res)=>{
     res.send("testing server")
+})
+
+// This will only handle GET calls to /user
+app.get("/user", (req, res)=>{
+    res.send({firstName: "Anil", lastName: "Yadav"})
+});
+
+// This will only handle POST calls to /user
+app.post("/user", (req, res)=>{
+    // Saving data to data base
+    res.send("Data successfully saved in database")
+})
+
+app.delete("/user", (req, res)=>{
+    // deleting data to data base
+    res.send("Data successfully deleted from database")
 })
