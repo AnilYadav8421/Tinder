@@ -15,6 +15,25 @@ app.use("/test",(req, res)=>{
     res.send("testing server")
 })
 
+// Handel Auth Middleware for all GET, POST, .... all request.
+app.use('/admin', (req, res, next) =>{
+    console.log("Admin auth is getting checked");
+    const token = 'xyz';
+    const isAdminAuthorized = token == 'xyz';
+    if (!isAdminAuthorized){
+        res.status(401).send('Unauthorized request');
+    } else{
+        next();
+    }
+});
+
+app.get('/admin/getAllData', (req, res) =>{
+    res.send("All data Sent")
+});
+app.get('/admin/deleteUser', (req, res)=>{
+    res.send("Deleted a user")
+})
+
 // This will only handle GET calls to /user
 app.get("/user", (req, res)=>{
     res.send({firstName: "Anil", lastName: "Yadav"})
@@ -29,4 +48,11 @@ app.post("/user", (req, res)=>{
 app.delete("/user", (req, res)=>{
     // deleting data to data base
     res.send("Data successfully deleted from database")
+})
+
+// To handle all the errors in express but make sure first parameter is error. 
+app.use("/", (err, req, res, next)=>{
+    if(err){
+        res.status(500).send("Something went wrong");
+    }
 })
