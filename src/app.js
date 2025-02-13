@@ -5,6 +5,29 @@ const connectDB = require("./config/database");  //after this you can see succes
 // creating new appliction of express
 const app = express();
 
+// get model to store data in that.
+const User = require("./models/user");
+
+// Create api using POST method because it is best method.
+// here we created api for signup
+app.post("/signup", async (req, res)=>{
+    const userObj = {
+        firstName: "Virat",
+        lastName: "kohli",
+        emailId: "virat@kohli.com",
+        password: "virat@kohli"
+    }
+
+    // creating user instance of the user modal.
+    const user = new User(userObj);
+
+    // Once instance is create then save it.
+    await user.save();
+
+    // After save send response otherwise it will run in loop
+    res.send("User added successfully");
+})
+
 
 // here we are connecting if connection successful then we get this message in console
 // connectionDB will return promise then we will see successfull and failed meassage in console.
