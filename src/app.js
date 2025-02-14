@@ -8,24 +8,48 @@ const app = express();
 // get model to store data in that.
 const User = require("./models/user");
 
+// To use middleware use [use] method.
+app.use(express.json());
+
 // Create api using POST method because it is best method.
 // here we created api for signup
 app.post("/signup", async (req, res)=>{
-    const userObj = {
-        firstName: "Virat",
-        lastName: "kohli",
-        emailId: "virat@kohli.com",
-        password: "virat@kohli"
-    }
 
     // creating user instance of the user modal.
-    const user = new User(userObj);
+    const user = new User(req.body);
 
     // Once instance is create then save it.
     await user.save();
 
     // After save send response otherwise it will run in loop
     res.send("User added successfully");
+})
+
+// To find single user from database by email
+app.get("/user", async (req, res)=>{
+    const userEmail = req.body.emailId;
+
+    try {
+        const users = await User.find({emailId: userEmail});
+        if(users.length ==0){
+            res.status(404).send("User not found")
+        }else{
+            res.send(users);
+        }
+    } catch (err) {
+        res.status(400).send("Somthing went wrong");
+    }
+})
+
+
+// Feed API - GET /feed - get all the users from the database
+app.get("/feed", async (req, res)=>{
+    try {
+        const users = await User.find({}) // empty bracket means it fetch all the user from database.
+        res.send(users);
+    } catch (err) {
+        res.status(400).send("something went wrong")
+    }
 })
 
 
