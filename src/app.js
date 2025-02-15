@@ -14,15 +14,18 @@ app.use(express.json());
 // Create api using POST method because it is best method.
 // here we created api for signup
 app.post("/signup", async (req, res) => {
-
-    // creating user instance of the user modal.
+    try {
+        // creating user instance of the user modal.
     const user = new User(req.body);
 
     // Once instance is create then save it.
     await user.save();
 
     // After save send response otherwise it will run in loop
-    res.send("User added successfully");
+    res.status(201).send("User added successfully");
+    } catch (err) {
+        res.status(400).send(err.message);
+    }
 })
 
 // To find single user from database by email
@@ -69,10 +72,14 @@ app.patch("/user", async (req, res)=>{
     const data = req.body;
     try{
         // here we write two things one is user id and second the data i have to update
-        await User.findByIdAndUpdate({_id: userId}, data)
+        const user = await User.findByIdAndUpdate({_id: userId}, data,{
+            returnDocument: "after",
+            runValidators: true
+        })
+        console.log(user);
         res.send("User updated Successfully")
     }catch (err) {
-        res.status(400).send("Something went wrong")
+        res.status(400).send("Update failed:"+ err.message)
     }
 })
 
