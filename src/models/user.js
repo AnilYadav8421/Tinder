@@ -1,6 +1,9 @@
 // need mongoose so import it
 const mongoose = require('mongoose');
 
+// import validator
+const validator = require("validator");
+
 // here creating schema
 const userSchema = new mongoose.Schema({
     // here pass all the parameter that users needs
@@ -19,10 +22,20 @@ const userSchema = new mongoose.Schema({
         unique: true,  //this unique keyword protect from registering same emailId
         lowercase: true, // this will convert string to lowercase
         trim: true, // this will remove white space from string
+        validate(value){
+            if(!validator.isEmail(value)){
+                throw new Error("Invalid email address" + value);
+            }
+        }
     },
     password: {
         type: String,
         required: true,
+        validate(value){
+            if(!validator.isStrongPassword(value)){
+                throw new Error("Enter a strong password" + value);
+            }
+        }
     },
     age:{
         type: Number,

@@ -67,10 +67,18 @@ app.delete("/user", async (req, res) => {
 })
 
 // Update the user in database
-app.patch("/user", async (req, res)=>{
-    const userId = req.body.userId;
+app.patch("/user/:userId", async (req, res)=>{
+    const userId = req.params?.userId;
     const data = req.body;
     try{
+        // Validating which schema should update and which not
+        const ALLOWED_UPDATES = [
+             "photoUrl", "about", "gender", "age", "skills"
+        ];
+        const isUpdateAllowed = Object.keys(data).every((k)=> ALLOWED_UPDATES.includes(k));
+        if (!isUpdateAllowed){
+            throw new Error("Update not allowed");
+        }
         // here we write two things one is user id and second the data i have to update
         const user = await User.findByIdAndUpdate({_id: userId}, data,{
             returnDocument: "after",
