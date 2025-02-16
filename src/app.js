@@ -8,6 +8,12 @@ const app = express();
 // get model to store data in that.
 const User = require("./models/user");
 
+// import validation
+const { validateSignupData } = require("./utils/validation");
+
+// import bcrypt
+const bcrypt = require("bcrypt")
+
 // To use middleware use [use] method.
 app.use(express.json());
 
@@ -15,16 +21,52 @@ app.use(express.json());
 // here we created api for signup
 app.post("/signup", async (req, res) => {
     try {
+        // for signup first step is validation don't let anyone signup with wrong information.
+        validateSignupData(req);
+
+        const {firstName, lastName, emailId, password} = req.body;
+
+        // after all data is correct Encript the password
+        // basically it encrypt using salt method
+        const passwordHash = await bcrypt.hash(password, 10);        
+
         // creating user instance of the user modal.
-    const user = new User(req.body);
+        const user = new User({
+            firstName, lastName, emailId, password: passwordHash,
+        });
 
-    // Once instance is create then save it.
-    await user.save();
+        // Once instance is create then save it.
+        await user.save();
 
-    // After save send response otherwise it will run in loop
-    res.status(201).send("User added successfully");
+        // After save send response otherwise it will run in loop
+        res.status(201).send("User added successfully");
     } catch (err) {
-        res.status(400).send(err.message);
+        res.status(400).send("ERROR: " + err.message);
+    }
+})
+
+// Lets create API for login
+app.post("/login", async (req, res)=>{
+    try {
+        // we need email and password so extract it first
+        const {emailId, password} = req.body;
+
+        // then check the user is login that is valid after that check user login data is correct
+        const user = await User.findOne({emailId: emailId});
+        if(!user){
+            throw new Error("Invalid credential")
+        }
+
+        // then check it is correct
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if(isPasswordValid){
+            res.send("Login Successful")
+        }
+        else{
+            throw new Error("Invalid credential")
+        }
+    } catch (err) {
+        res.status(400).send("ERROR: " + err.message)
     }
 })
 
@@ -67,27 +109,27 @@ app.delete("/user", async (req, res) => {
 })
 
 // Update the user in database
-app.patch("/user/:userId", async (req, res)=>{
+app.patch("/user/:userId", async (req, res) => {
     const userId = req.params?.userId;
     const data = req.body;
-    try{
+    try {
         // Validating which schema should update and which not
         const ALLOWED_UPDATES = [
-             "photoUrl", "about", "gender", "age", "skills"
+            "photoUrl", "about", "gender", "age", "skills"
         ];
-        const isUpdateAllowed = Object.keys(data).every((k)=> ALLOWED_UPDATES.includes(k));
-        if (!isUpdateAllowed){
+        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+        if (!isUpdateAllowed) {
             throw new Error("Update not allowed");
         }
         // here we write two things one is user id and second the data i have to update
-        const user = await User.findByIdAndUpdate({_id: userId}, data,{
+        const user = await User.findByIdAndUpdate({ _id: userId }, data, {
             returnDocument: "after",
             runValidators: true
         })
         console.log(user);
         res.send("User updated Successfully")
-    }catch (err) {
-        res.status(400).send("Update failed:"+ err.message)
+    } catch (err) {
+        res.status(400).send("Update failed:" + err.message)
     }
 })
 
