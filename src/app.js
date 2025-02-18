@@ -5,6 +5,8 @@ const connectDB = require("./config/database");  //after this you can see succes
 // creating new appliction of express
 const app = express();
 
+
+
 // get model to store data in that.
 const User = require("./models/user");
 
@@ -14,8 +16,15 @@ const { validateSignupData } = require("./utils/validation");
 // import bcrypt
 const bcrypt = require("bcrypt")
 
+// import cookies parser
+const cookieParser = require("cookie-parser");
+
 // To use middleware use [use] method.
 app.use(express.json());
+
+// add the cookies parser here so now you can read all cookies which is comming
+app.use(cookieParser());
+
 
 // Create api using POST method because it is best method.
 // here we created api for signup
@@ -24,11 +33,11 @@ app.post("/signup", async (req, res) => {
         // for signup first step is validation don't let anyone signup with wrong information.
         validateSignupData(req);
 
-        const {firstName, lastName, emailId, password} = req.body;
+        const { firstName, lastName, emailId, password } = req.body;
 
         // after all data is correct Encript the password
         // basically it encrypt using salt method
-        const passwordHash = await bcrypt.hash(password, 10);        
+        const passwordHash = await bcrypt.hash(password, 10);
 
         // creating user instance of the user modal.
         const user = new User({
@@ -46,28 +55,42 @@ app.post("/signup", async (req, res) => {
 })
 
 // Lets create API for login
-app.post("/login", async (req, res)=>{
+app.post("/login", async (req, res) => {
     try {
         // we need email and password so extract it first
-        const {emailId, password} = req.body;
+        const { emailId, password } = req.body;
 
         // then check the user is login that is valid after that check user login data is correct
-        const user = await User.findOne({emailId: emailId});
-        if(!user){
+        const user = await User.findOne({ emailId: emailId });
+        if (!user) {
             throw new Error("Invalid credential")
         }
 
+
         // then check it is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if(isPasswordValid){
+        if (isPasswordValid) {
+            // Create JWT Token
+            // Add the Token to cookies and send the response back to the user
+            res.cookie("token", "jshdihdiaiehociehohfoijdp9u309rujpojao")
             res.send("Login Successful")
         }
-        else{
+        else {
             throw new Error("Invalid credential")
         }
     } catch (err) {
         res.status(400).send("ERROR: " + err.message)
     }
+})
+
+
+
+app.get("/profile", async (req, res) => {
+    // validate cookies
+    const cookies = req.cookies;
+
+    console.log(cookies);
+    res.send("Reading Cookies");
 })
 
 // To find single user from database by email
