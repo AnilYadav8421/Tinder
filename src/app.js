@@ -2,10 +2,9 @@
 const express = require('express');
 // importing mangoose databse
 const connectDB = require("./config/database");  //after this you can see successfuk message in console.
+
 // creating new appliction of express
 const app = express();
-
-
 
 // get model to store data in that.
 const User = require("./models/user");
@@ -18,6 +17,10 @@ const bcrypt = require("bcrypt")
 
 // import cookies parser
 const cookieParser = require("cookie-parser");
+
+// import jsonwebtoken
+const jwt = require("jsonwebtoken");
+const {userAuth} = require("./middlewares/auth"); //import middleware here
 
 // To use middleware use [use] method.
 app.use(express.json());
@@ -70,9 +73,16 @@ app.post("/login", async (req, res) => {
         // then check it is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (isPasswordValid) {
+
             // Create JWT Token
+            //whenever you create token you can hide some data here we will hide user id
+            //_id means we hiding user id from our database || tinder@project1 is a secret key which only you and server knows and it is very important
+            const token = await jwt.sign({_id: user._id}, "tinder@project1");
+            console.log(token);
+              
+
             // Add the Token to cookies and send the response back to the user
-            res.cookie("token", "jshdihdiaiehociehohfoijdp9u309rujpojao")
+            res.cookie("token", token)
             res.send("Login Successful")
         }
         else {
@@ -83,78 +93,106 @@ app.post("/login", async (req, res) => {
     }
 })
 
-
-
-app.get("/profile", async (req, res) => {
-    // validate cookies
+// pass the middleware userAuth in profile
+app.get("/profile", userAuth, async (req, res) => {
+    try{
+        // validate cookies
     const cookies = req.cookies;
 
-    console.log(cookies);
-    res.send("Reading Cookies");
-})
+    // Extracting the cookies
+    const {token} = cookies;
 
-// To find single user from database by email
-app.get("/user", async (req, res) => {
-    const userEmail = req.body.emailId;
+    //Varify || if the token is valid send the response back ok u can access the data otherwise your token has expired.
+    // here you have to pass token which we are getting, and secret key which we have created.
+    const decodedMessage = await jwt.verify(token, "tinder@project1");
+    console.log(decodedMessage);
+    // so now i get decoded message then store it
+    const {_id} = decodedMessage;
+    // console.log("Logged in user is :" + _id);
 
-    try {
-        const users = await User.find({ emailId: userEmail });
-        if (users.length == 0) {
-            res.status(404).send("User not found")
-        } else {
-            res.send(users);
+    const user = await User.findById(_id);
+        if (!user) {
+            return res.status(404).send("User not found");
         }
-    } catch (err) {
-        res.status(400).send("Somthing went wrong");
+
+        // Send user details
+        res.json(user);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send("Something went wrong");
     }
 })
 
-
-// Feed API - GET /feed - get all the users from the database
-app.get("/feed", async (req, res) => {
-    try {
-        const users = await User.find({}) // empty bracket means it fetch all the user from database.
-        res.send(users);
-    } catch (err) {
-        res.status(400).send("something went wrong")
-    }
+// Creating API to send connection request
+app.post("/sendConnectionRequest", userAuth, async (req, res)=>{
+    // read who is sending connection request
+    const user = req.user;
+    // Sending a connection request
+    console.log("Sending a connection request");
+    
+    res.send(user.firstName + " sent the Connection request!")
 })
 
-// Delete user from database by ID.
-app.delete("/user", async (req, res) => {
-    const userId = req.body.userId;
-    try {
-        const user = await User.findByIdAndDelete(userId);
-        res.send("User deleted successfully")
-    } catch (err) {
-        res.status(400).send("Something went wrong")
-    }
-})
 
-// Update the user in database
-app.patch("/user/:userId", async (req, res) => {
-    const userId = req.params?.userId;
-    const data = req.body;
-    try {
-        // Validating which schema should update and which not
-        const ALLOWED_UPDATES = [
-            "photoUrl", "about", "gender", "age", "skills"
-        ];
-        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
-        if (!isUpdateAllowed) {
-            throw new Error("Update not allowed");
-        }
-        // here we write two things one is user id and second the data i have to update
-        const user = await User.findByIdAndUpdate({ _id: userId }, data, {
-            returnDocument: "after",
-            runValidators: true
-        })
-        console.log(user);
-        res.send("User updated Successfully")
-    } catch (err) {
-        res.status(400).send("Update failed:" + err.message)
-    }
-})
+// // To find single user from database by email
+// app.get("/user", async (req, res) => {
+//     const userEmail = req.body.emailId;
+
+//     try {
+//         const users = await User.find({ emailId: userEmail });
+//         if (users.length == 0) {
+//             res.status(404).send("User not found")
+//         } else {
+//             res.send(users);
+//         }
+//     } catch (err) {
+//         res.status(400).send("Somthing went wrong");
+//     }
+// })
+// // Feed API - GET /feed - get all the users from the database
+// app.get("/feed", async (req, res) => {
+//     try {
+//         const users = await User.find({}) // empty bracket means it fetch all the user from database.
+//         res.send(users);
+//     } catch (err) {
+//         res.status(400).send("something went wrong")
+//     }
+// })
+// // Delete user from database by ID.
+// app.delete("/user", async (req, res) => {
+//     const userId = req.body.userId;
+//     try {
+//         const user = await User.findByIdAndDelete(userId);
+//         res.send("User deleted successfully")
+//     } catch (err) {
+//         res.status(400).send("Something went wrong")
+//     }
+// })
+// // Update the user in database
+// app.patch("/user/:userId", async (req, res) => {
+//     const userId = req.params?.userId;
+//     const data = req.body;
+//     try {
+//         // Validating which schema should update and which not
+//         const ALLOWED_UPDATES = [
+//             "photoUrl", "about", "gender", "age", "skills"
+//         ];
+//         const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+//         if (!isUpdateAllowed) {
+//             throw new Error("Update not allowed");
+//         }
+//         // here we write two things one is user id and second the data i have to update
+//         const user = await User.findByIdAndUpdate({ _id: userId }, data, {
+//             returnDocument: "after",
+//             runValidators: true
+//         })
+//         console.log(user);
+//         res.send("User updated Successfully")
+//     } catch (err) {
+//         res.status(400).send("Update failed:" + err.message)
+//     }
+// })
 
 // here we are connecting if connection successful then we get this message in console
 // connectionDB will return promise then we will see successfull and failed meassage in console.
