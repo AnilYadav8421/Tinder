@@ -1,4 +1,4 @@
-    // THIS IS A PLACE WHERE WE WRITE ALL THE VALIDATION FOR SIGNUP AFTER THAT ONLY USER CAN SIGNUP
+// THIS IS A PLACE WHERE WE WRITE ALL THE VALIDATION FOR SIGNUP AFTER THAT ONLY USER CAN SIGNUP
 
 // import validator to check email
 const validator = require("validator")
@@ -6,23 +6,23 @@ const validator = require("validator")
 const validateSignupData = (req) => {
 
     // Extract data from req.body
-    const {firstName, lastName, emailId, password} = req.body;
+    const { firstName, lastName, emailId, password } = req.body;
 
     // firts check name is exist
-    if(!firstName || !lastName){
-        throw new Error ("Name is not valid");
+    if (!firstName || !lastName) {
+        throw new Error("Name is not valid");
     }
     // check the length of name
-    else if(firstName.length < 4 || firstName.length > 50){
-        throw new Error ("firstName should be 4-50 character");
+    else if (firstName.length < 4 || firstName.length > 50) {
+        throw new Error("firstName should be 4-50 character");
     }
     // check email is in correct format
-    else if(!validator.isEmail(emailId)){
-        throw new Error ("Email is not valid");
+    else if (!validator.isEmail(emailId)) {
+        throw new Error("Email is not valid");
     }
     // check password is strong otherwise throw the error
-    else if(!validator.isStrongPassword(password)){
-        throw new Error ("Please enter the strong password");
+    else if (!validator.isStrongPassword(password)) {
+        throw new Error("Please enter the strong password");
     }
 }
 module.exports = {

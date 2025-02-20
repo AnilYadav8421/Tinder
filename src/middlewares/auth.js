@@ -7,7 +7,7 @@ const userAuth = async (req, res, next) => {
         // job of this middleware is to read the request cookies
         const { token } = req.cookies;
         // if token doesnt exit throw an error
-        if(!token){
+        if (!token) {
             throw new Error("Token is not valid!")
         }
         // varify it
@@ -26,8 +26,6 @@ const userAuth = async (req, res, next) => {
     catch (err) {
         res.status(400).send("ERROR : " + err.message);
     }
-    // validate the token
-    // find the user that user is exist in database
 }
 
 module.exports = {

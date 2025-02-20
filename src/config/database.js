@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 // Correct way to connect mongoose to the cluster using async & await
-const connectDB = async () =>{
+const connectDB = async () => {
     mongoose.connect(
         "mongodb+srv://anilyadav8149838058:qzYaF38xEE15pnfD@cluster0.9vvmc.mongodb.net/Tinder" //this tender means we are connecting tinder database to out project otherwise it will cinnect cluster where may be multiple database
     );
