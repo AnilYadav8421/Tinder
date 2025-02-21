@@ -8,8 +8,7 @@ const jwt = require("jsonwebtoken");// import jsonwebtoken
 
 
 
-
-// here we created api for signup using Express router
+// here we created api using Express router
 authRouter.post("/signup", async (req, res) => {
     try {
         // for signup first step is validation don't let anyone signup with wrong information.
@@ -71,5 +70,11 @@ authRouter.post("/login", async (req, res) => {
     }
 })
 
+authRouter.post("/logout", async (req, res)=>{
+    res.cookie("token", null ,{
+        expires: new Date(Date.now()),
+    });
+    res.send("Logout Successfull!!");
+})
 
 module.exports = authRouter; // router is exported
