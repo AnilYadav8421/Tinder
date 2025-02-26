@@ -26,7 +26,7 @@ const validateSignupData = (req) => {
     }
 }
 
-const validateEditProfileData = (req) =>{
+const validateEditProfileData = (req) => {
     const allowedEditFields = ["firstName", "LastName", "emailId", "photoUrl", "gender", "age", "about", "skills"]
     // loop through every keys, field
     return Object.keys(req.body).every(field => allowedEditFields.includes(field))
