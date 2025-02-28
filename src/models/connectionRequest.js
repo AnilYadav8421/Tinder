@@ -4,10 +4,12 @@ const mongoose = require("mongoose");// import Moongoose
 const connectionRequestSchema = mongoose.Schema({
     fromUserId: {
         type: mongoose.Schema.Types.ObjectId, //this an ID of user
+        ref: "User", //reference to the user collection
         required: true,
     },
     toUserId: {
         type: mongoose.Schema.Types.ObjectId,  //this an ID of user
+        ref: "User",
         required: true,
     },
 
