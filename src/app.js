@@ -13,10 +13,12 @@ app.use(cookieParser());// add the cookies parser here so now you can read all c
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 // here we are connecting if connection successful then we get this message in console
 // connectionDB will return promise then we will see successfull and failed meassage in console.
