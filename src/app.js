@@ -4,8 +4,9 @@ const connectDB = require("./config/database");  //after this you can see succes
 const app = express();// creating new appliction of express
 const cookieParser = require("cookie-parser");// import cookies parser
 const jwt = require("jsonwebtoken");// import jsonwebtoken
+const cors = require("cors"); // import cors
 
-
+app.use(cors())
 app.use(express.json());// To use middleware use [use] method.
 app.use(cookieParser());// add the cookies parser here so now you can read all cookies which is comming
 
