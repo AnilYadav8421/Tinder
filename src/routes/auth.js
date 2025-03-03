@@ -55,12 +55,11 @@ authRouter.post("/login", async (req, res) => {
             //whenever you create token you can hide some data here we will hide user id
             //_id means we hiding user id from our database || tinder@project1 is a secret key which only you and server knows and it is very important
             const token = await jwt.sign({ _id: user._id }, "tinder@project1");
-            // console.log(token);
 
 
             // Add the Token to cookies and send the response back to the user
             res.cookie("token", token)
-            res.send("Login Successful")
+            res.send(user)
         }
         else {
             throw new Error("Invalid credential")

@@ -6,7 +6,11 @@ const cookieParser = require("cookie-parser");// import cookies parser
 const jwt = require("jsonwebtoken");// import jsonwebtoken
 const cors = require("cors"); // import cors
 
-app.use(cors())
+// it allows the cookies to display.
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+}));
 app.use(express.json());// To use middleware use [use] method.
 app.use(cookieParser());// add the cookies parser here so now you can read all cookies which is comming
 
