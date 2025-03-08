@@ -50,44 +50,84 @@ userRouter.get("/user/connections", userAuth, async (req, res)=>{
     }
 })
 
-userRouter.get("/feed?page=1&limit=10", userAuth, async (req, res)=>{
+// userRouter.get("/feed?page=1&limit=10", userAuth, async (req, res)=>{
+//     try {
+//         const loggedInUser = req.user;
+
+//         const page = parseInt(req.query.page) || 1;
+//         let limit = parseInt(req.query.page) || 10;
+//         limit = limit>50 ? 50 : limit;
+
+//         // calculate skip using formula
+//         const skip = (page-1)+limit;
+
+//         // Find all the connection request (sent + received)
+//         const connectionRequests = await ConnectionRequest.find({
+//             $or:[
+//                 { fromUserId: loggedInUser._id},
+//                 {toUserId: loggedInUser._id}
+//             ]
+//         }).select("fromUserId toUserId")
+
+
+//         const hideUserFromFeed = new Set();
+//         connectionRequests.forEach(req => {
+//             hideUserFromFeed.add(req.fromUserId);
+//             hideUserFromFeed.add(req.toUserId);
+//         })
+
+//         const users = await User.find({
+//             $and:[
+//                 {_id: {$nin: Array.from(hideUserFromFeed)}},
+//                 {_id: {$ne: loggedInUser._id}}
+//             ],
+//         }).select(USER_SAFE_DATA).skip(skip).limit(limit);
+
+//         res.send(connectionRequests)
+//     } catch (err) {
+//         res.status(400).json({message: err.message})
+//     }
+// })
+
+userRouter.get("/feed", userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user;
 
         const page = parseInt(req.query.page) || 1;
-        let limit = parseInt(req.query.page) || 10;
-        limit = limit>50 ? 50 : limit;
+        let limit = parseInt(req.query.limit) || 10;
+        limit = limit > 50 ? 50 : limit;
 
-        // calculate skip using formula
-        const skip = (page-1)+limit;
+        const skip = (page - 1) * limit;
 
-        // Find all the connection request (sent + received)
         const connectionRequests = await ConnectionRequest.find({
-            $or:[
-                { fromUserId: loggedInUser._id},
-                {toUserId: loggedInUser._id}
+            $or: [
+                { fromUserId: loggedInUser._id },
+                { toUserId: loggedInUser._id }
             ]
-        }).select("fromUserId toUserId")
-
+        }).select("fromUserId toUserId");
 
         const hideUserFromFeed = new Set();
         connectionRequests.forEach(req => {
-            hideUserFromFeed.add(req.fromUserId);
-            hideUserFromFeed.add(req.toUserId);
-        })
+            hideUserFromFeed.add(req.fromUserId.toString());
+            hideUserFromFeed.add(req.toUserId.toString());
+        });
+
+        hideUserFromFeed.add(loggedInUser._id.toString());
 
         const users = await User.find({
-            $and:[
-                {_id: {$nin: Array.from(hideUserFromFeed)}},
-                {_id: {$ne: loggedInUser._id}}
-            ],
-        }).select(USER_SAFE_DATA).skip(skip).limit(limit);
+            _id: { $nin: Array.from(hideUserFromFeed) }
+        })
+        .select(USER_SAFE_DATA)
+        .skip(skip)
+        .limit(limit);
 
-        res.send(connectionRequests)
+        res.status(200).json(users);
     } catch (err) {
-        res.status(400).json({message: err.message})
+        console.error("Error fetching feed:", err);
+        res.status(400).json({ message: err.message });
     }
-})
+});
+
 
 
 module.exports = userRouter;
