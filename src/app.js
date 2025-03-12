@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");// import cookies parser
 const jwt = require("jsonwebtoken");// import jsonwebtoken
 const cors = require("cors"); // import cors
 
+
 // it allows the cookies to display.
 app.use(cors({
     origin: "http://localhost:5173",

@@ -70,6 +70,9 @@ const userSchema = new mongoose.Schema({
         timestamps: true,
     }
 );
+userSchema.methods.getJWT = function () {
+    return jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
 
 // this is a mongoose model which 2 parameter firts is name of model and 2nd is schema [user, Schema]
 const User = mongoose.model("User", userSchema);

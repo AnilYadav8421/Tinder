@@ -26,10 +26,17 @@ authRouter.post("/signup", async (req, res) => {
         });
 
         // Once instance is create then save it.
-        await user.save();
+        const savedUser = await user.save();
+        // const token = await savedUser.getJWT();
+        const token = await jwt.sign({ _id: savedUser._id }, "tinder@project1");
+
+
+        res.cookie("token", token, {
+            expires: new Date(Date.now() + 8 * 3600000)
+        });
 
         // After save send response otherwise it will run in loop
-        res.status(201).send("User added successfully");
+        res.status(201).json({message: "User added successfully", data: savedUser});
     } catch (err) {
         res.status(400).send("ERROR: " + err.message);
     }
