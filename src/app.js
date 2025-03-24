@@ -19,7 +19,7 @@ if (!JWT_SECRET) {
 
 // it allows the cookies to display.
 app.use(cors({
-    origin: CORS_ORIGIN,
+    origin: CORS_ORIGIN.split(","),
     credentials: true,
 }));
 
@@ -48,7 +48,7 @@ connectDB()
             console.log(`server is successfully listining on port ${PORT}`);
         });
     })
-    .catch(err => {
+    .catch((err) => {
         console.error("Database cannot be connected", err);
         process.exit(1) // Exit process if DB connection fails
     })
