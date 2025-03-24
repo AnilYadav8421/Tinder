@@ -1,17 +1,28 @@
+require("dotenv").config(); // Load environment variables from .env file
 const express = require('express');// importing express server.
 // importing mangoose databse
 const connectDB = require("./config/database");  //after this you can see successfuk message in console.
 const app = express();// creating new appliction of express
 const cookieParser = require("cookie-parser");// import cookies parser
-const jwt = require("jsonwebtoken");// import jsonwebtoken
+// const jwt = require("jsonwebtoken");// import jsonwebtoken
 const cors = require("cors"); // import cors
 
+const PORT = process.env.PORT || 3000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// Ensure JWT_SECRET is set
+if (!JWT_SECRET) {
+    console.error("❌ ERROR: JWT_SECRET is missing in .env file!");
+    process.exit(1);
+}
 
 // it allows the cookies to display.
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: CORS_ORIGIN,
     credentials: true,
 }));
+
 app.use(express.json());// To use middleware use [use] method.
 app.use(cookieParser());// add the cookies parser here so now you can read all cookies which is comming
 
@@ -28,7 +39,7 @@ app.use("/", userRouter);
 
 // here we are connecting if connection successful then we get this message in console
 // connectionDB will return promise then we will see successfull and failed meassage in console.
-const PORT = process.env.PORT || 3000;
+
 connectDB()
     .then(() => {
         console.log("Database connection established...");
