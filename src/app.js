@@ -28,12 +28,13 @@ app.use("/", userRouter);
 
 // here we are connecting if connection successful then we get this message in console
 // connectionDB will return promise then we will see successfull and failed meassage in console.
+const PORT = process.env.PORT || 3000;
 connectDB()
     .then(() => {
         console.log("Database connection established...");
         // calling listen method which is listining on port number(3000) [this no. will be any no. which u wan]t for anyone can connect with us.
-        app.listen(3000, () => { // in 3 step we have created express sever.
-            console.log("server is successfully listining on port 3000");
+        app.listen(PORT, () => { // in 3 step we have created express sever.
+            console.log(`server is successfully listining on port ${PORT}`);
         });
     })
     .catch(err => {
