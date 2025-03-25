@@ -18,9 +18,16 @@ if (!JWT_SECRET) {
 }
 
 // it allows the cookies to display.
+// app.use(cors({
+//     origin: CORS_ORIGIN.split(","),
+//     credentials: true,
+// }));
+
 app.use(cors({
-    origin: CORS_ORIGIN.split(","),
-    credentials: true,
+    origin: ["https://tinder-app-frontend.onrender.com", "http://localhost:5173"], // Allow frontend
+    credentials: true,  // Allow cookies & auth headers
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allow methods
+    allowedHeaders: ["Content-Type", "Authorization"] // Allow headers
 }));
 
 app.use(express.json());// To use middleware use [use] method.
