@@ -35,6 +35,13 @@ app.options("*", (req, res) => {
 app.use(express.json()); // Parse JSON bodies
 app.use(cookieParser()); // Enable cookie parsing
 
+// ✅ Debug Middleware (Logs Incoming Requests & Cookies)
+app.use((req, res, next) => {
+    console.log(`📡 [${req.method}] ${req.path}`);
+    console.log("🍪 Cookies:", req.cookies);
+    next();
+});
+
 // Import Routes
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
