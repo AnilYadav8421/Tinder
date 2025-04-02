@@ -28,7 +28,7 @@ authRouter.post("/signup", async (req, res) => {
         // Once instance is create then save it.
         const savedUser = await user.save();
         // const token = await savedUser.getJWT();
-        const token = await jwt.sign({ _id: savedUser._id }, "tinder@project1");
+        const token = jwt.sign({ _id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 
         res.cookie("token", token, {
@@ -61,7 +61,7 @@ authRouter.post("/login", async (req, res) => {
             // Create JWT Token
             //whenever you create token you can hide some data here we will hide user id
             //_id means we hiding user id from our database || tinder@project1 is a secret key which only you and server knows and it is very important
-            const token = jwt.sign({ _id: user._id }, "tinder@project1");
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 
             // Add the Token to cookies and send the response back to the user
