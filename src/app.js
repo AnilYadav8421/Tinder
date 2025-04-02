@@ -1,12 +1,10 @@
-require("dotenv").config(); // Load environment variables from .env file
-const express = require('express');// importing express server.
-// importing mangoose databse
-const connectDB = require("./config/database");  //after this you can see successfuk message in console.
-const app = express();// creating new appliction of express
-const cookieParser = require("cookie-parser");// import cookies parser
-// const jwt = require("jsonwebtoken");// import jsonwebtoken
-const cors = require("cors"); // import cors
+require("dotenv").config(); // Load environment variables
+const express = require("express"); // Import express
+const connectDB = require("./config/database"); // Database connection
+const cookieParser = require("cookie-parser"); // Cookie parser middleware
+const cors = require("cors"); // CORS middleware
 
+const app = express(); // Initialize express app
 const PORT = process.env.PORT || 3000;
 const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -17,97 +15,87 @@ if (!JWT_SECRET) {
     process.exit(1);
 }
 
-// it allows the cookies to display.
-// app.use(cors({
-//     origin: CORS_ORIGIN.split(","),
-//     credentials: true,
-// }));
-
+// ✅ Fix CORS Policy
 app.use(cors({
-    origin: ["https://tinder-app-frontend.onrender.com", "http://localhost:5173"], // Allow frontend
-    credentials: true,  // Allow cookies & auth headers
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allow methods
-    allowedHeaders: ["Content-Type", "Authorization"] // Allow headers
+    origin: ["https://tinder-app-frontend.onrender.com", "http://localhost:5173"],  
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // ✅ PATCH must be included
+    allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
-app.use(express.json());// To use middleware use [use] method.
-app.use(cookieParser());// add the cookies parser here so now you can read all cookies which is comming
+// ✅ Handle Preflight Requests for PATCH
+app.options("*", (req, res) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.sendStatus(200);
+});
 
-//here import router to help app to know from where the routes is comming
+// Middleware
+app.use(express.json()); // Parse JSON bodies
+app.use(cookieParser()); // Enable cookie parsing
+
+// Import Routes
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 
+// Use Routes
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 
-// here we are connecting if connection successful then we get this message in console
-// connectionDB will return promise then we will see successfull and failed meassage in console.
-
+// Connect to Database & Start Server
 connectDB()
     .then(() => {
-        console.log("Database connection established...");
-        // calling listen method which is listining on port number(3000) [this no. will be any no. which u wan]t for anyone can connect with us.
-        app.listen(PORT, () => { // in 3 step we have created express sever.
-            console.log(`server is successfully listining on port ${PORT}`);
+        console.log("✅ Database connection established...");
+        app.listen(PORT, () => {
+            console.log(`🚀 Server is running on port ${PORT}`);
         });
     })
     .catch((err) => {
-        console.error("Database cannot be connected", err);
-        process.exit(1) // Exit process if DB connection fails
-    })
+        console.error("❌ Database connection failed:", err);
+        process.exit(1);
+    });
 
+// Test Route
+app.get("/test", (req, res) => {
+    res.send("✅ Server is working!");
+});
 
-
-
-// lets use user handler mathod is use as it's name indicate that is to handle user.
-// req, res stand for request, response
-// This will match all the HTTP method API calls to /test
-app.use("/test", (req, res) => {
-    res.send("testing server")
-})
-
-// Handel Auth Middleware for all GET, POST, .... all request.
-app.use('/admin', (req, res, next) => {
-    console.log("Admin auth is getting checked");
-    const token = 'xyz';
-    const isAdminAuthorized = token == 'xyz';
-    if (!isAdminAuthorized) {
-        res.status(401).send('Unauthorized request');
-    } else {
-        next();
+// Admin Middleware Example
+app.use("/admin", (req, res, next) => {
+    console.log("🔑 Checking admin authentication...");
+    const token = "xyz";
+    if (token !== "xyz") {
+        return res.status(401).send("❌ Unauthorized request");
     }
+    next();
 });
 
-app.get('/admin/getAllData', (req, res) => {
-    res.send("All data Sent")
+// Admin Routes
+app.get("/admin/getAllData", (req, res) => {
+    res.send("📂 All data sent");
 });
-app.get('/admin/deleteUser', (req, res) => {
-    res.send("Deleted a user")
-})
+app.get("/admin/deleteUser", (req, res) => {
+    res.send("🗑 Deleted a user");
+});
 
-// This will only handle GET calls to /user
+// User Routes Example
 app.get("/user", (req, res) => {
-    res.send({ firstName: "Anil", lastName: "Yadav" })
+    res.send({ firstName: "Anil", lastName: "Yadav" });
+});
+app.post("/user", (req, res) => {
+    res.send("✅ Data successfully saved in database");
+});
+app.delete("/user", (req, res) => {
+    res.send("✅ Data successfully deleted from database");
 });
 
-// This will only handle POST calls to /user
-app.post("/user", (req, res) => {
-    // Saving data to data base
-    res.send("Data successfully saved in database")
-})
-
-app.delete("/user", (req, res) => {
-    // deleting data to data base
-    res.send("Data successfully deleted from database")
-})
-
-// To handle all the errors in express but make sure first parameter is error. 
-app.use("/", (err, req, res, next) => {
-    if (err) {
-        res.status(500).send("Something went wrong");
-    }
-})
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error("❌ Error:", err.message);
+    res.status(500).send("❌ Something went wrong!");
+});
