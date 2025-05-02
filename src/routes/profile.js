@@ -6,8 +6,6 @@ const jwt = require("jsonwebtoken");// import jsonwebtoken
 const { validateEditProfileData } = require('../utils/validation');
 
 
-
-
 profileRouter.get("/profile/view", userAuth, async (req, res) => {
     try {
         // validate cookies
@@ -19,10 +17,8 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
         //Varify || if the token is valid send the response back ok u can access the data otherwise your token has expired.
         // here you have to pass token which we are getting, and secret key which we have created.
         const decodedMessage = await jwt.verify(token, "tinder@project1");
-        // console.log(decodedMessage);
         // so now i get decoded message then store it
         const { _id } = decodedMessage;
-        // console.log("Logged in user is :" + _id);
 
         const user = await User.findById(_id);
         if (!user) {

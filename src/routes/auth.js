@@ -36,7 +36,7 @@ authRouter.post("/signup", async (req, res) => {
         });
 
         // After save send response otherwise it will run in loop
-        res.status(201).json({message: "User added successfully", data: savedUser});
+        res.status(201).json({ message: "User added successfully", data: savedUser, token: token });
     } catch (err) {
         res.status(400).send("ERROR: " + err.message);
     }
@@ -44,37 +44,31 @@ authRouter.post("/signup", async (req, res) => {
 
 authRouter.post("/login", async (req, res) => {
     try {
-        // we need email and password so extract it first
         const { emailId, password } = req.body;
 
-        // then check the user is login that is valid after that check user login data is correct
-        const user = await User.findOne({ emailId: emailId });
+        const user = await User.findOne({ emailId });
         if (!user) {
-            throw new Error("Invalid credential")
+            throw new Error("Invalid credentials");
         }
 
-
-        // then check it is correct
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (isPasswordValid) {
-
-            // Create JWT Token
-            //whenever you create token you can hide some data here we will hide user id
-            //_id means we hiding user id from our database || tinder@project1 is a secret key which only you and server knows and it is very important
             const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-
-            // Add the Token to cookies and send the response back to the user
-            res.cookie("token", token)
-            res.send(user)
-        }
-        else {
-            throw new Error("Invalid credential")
+            res.cookie("token", token);
+            res.status(200).json({
+                user,
+                token,
+              });
+               // Send user data after login
+        } else {
+            throw new Error("Invalid credentials");
         }
     } catch (err) {
-        res.status(400).send("ERROR: " + err.message)
+        res.status(400).send("ERROR: " + err.message);
     }
-})
+});
+
+  
 
 authRouter.post("/logout", async (req, res) => {
     res.cookie("token", null, {
